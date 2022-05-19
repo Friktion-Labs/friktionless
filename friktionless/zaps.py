@@ -6,7 +6,7 @@ from google.cloud import storage
 import os
 
 
-def volt_vs_spot(option_type, asset, save_img=False):
+def volt_vs_spot(option_type, asset, voltage='low', save_img=False):
 
     # construct price dataframe
     df_price_file_index = pd.read_json('https://storage.googleapis.com/friktion-reference-files/asset_prices.json')
@@ -24,7 +24,14 @@ def volt_vs_spot(option_type, asset, save_img=False):
 
 
     # construct share token price dataframe
-    url = 'https://raw.githubusercontent.com/Friktion-Labs/mainnet-tvl-snapshots/main/derived_timeseries/mainnet_income_{}_{}_sharePricesByGlobalId.json'.format(option_type, asset)
+    if asset == 'sol' and voltage == 'high':
+        asset_modified = 'sol_high'
+        asset_title = 'SOL High'
+    else:
+        asset_modified = asset
+        asset_title = asset
+
+    url = 'https://raw.githubusercontent.com/Friktion-Labs/mainnet-tvl-snapshots/main/derived_timeseries/mainnet_income_{}_{}_sharePricesByGlobalId.json'.format(option_type, asset_modified)
 
     try:
         df_share_token_price = pd.read_json(url)
@@ -60,7 +67,7 @@ def volt_vs_spot(option_type, asset, save_img=False):
         )
     ).properties(
         width=600,
-        title=asset.upper()+' '+option_type+' Position vs. Spot Price'
+        title=asset_title.upper()+' '+option_type+' Position vs. Spot Price'
     )
 
     
@@ -92,7 +99,7 @@ def volt_vs_spot(option_type, asset, save_img=False):
             color=alt.value('goldenrod')
         ).properties(
             width=600,
-            title=asset.upper()+' '+option_type.capitalize()+' Position vs. Spot Price'
+            title=asset_title.upper()+' '+option_type.capitalize()+' Position vs. Spot Price'
         )
 
     final_chart = (spot_price_chart + share_token_chart).resolve_scale(y='independent')
