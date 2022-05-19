@@ -56,6 +56,12 @@ def volt_vs_spot(option_type, asset, save_img=False):
         title=asset+' '+option_type+' Position vs. Spot Price'
     )
 
+    
+    if df_prices['price'].min() < 1:
+        format = '$,.2f'
+    else:
+        format = '$,.0f'
+
     spot_price_chart = alt.Chart(df_prices[
         (df_prices['date'] >= df_share_token_price['date'].min()) &
         (df_prices['date'] <= df_share_token_price['date'].max())
@@ -72,7 +78,7 @@ def volt_vs_spot(option_type, asset, save_img=False):
                 'price',
                 axis=alt.Axis(
                     title='Price',
-                    format='$,.0f'
+                    format=format
                 ),
                 scale=alt.Scale(domain=[df_prices['price'].min(),df_prices['price'].max()])
             ),
