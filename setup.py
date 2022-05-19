@@ -12,6 +12,6 @@ setup(
        'pandas',
        'google-cloud-storage',
        'altair_saver',
-       'python-chromedriver-binary'
+       'selenium'
        ]
 )
