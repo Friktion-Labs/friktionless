@@ -7,5 +7,5 @@ setup(
    author='Matt Martin',
    author_email='matt@friktionlabs.com',
    packages=['friktionless'], 
-   install_requires=['altair','pandas','google-cloud-storage']
+   install_requires=['altair','pandas','google-cloud-storage','altair_saver']
 )
