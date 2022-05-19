@@ -1,12 +1,12 @@
 import pandas as pd
 import altair as alt
-from google.cloud import storage
 from datetime import datetime
+import sys
 
 def volt_vs_spot(option_type, asset, save_img=False):
 
     # construct price dataframe
-    df_price_file_index = pd.read_json('gs://friktion-reference-files/asset_prices.json')
+    df_price_file_index = pd.read_json('https://storage.googleapis.com/friktion-reference-files/asset_prices.json')
     df_prices = pd.read_json(df_price_file_index[df_price_file_index['asset'] == asset]['url'].iloc[0])
 
     df_prices.rename(columns={
@@ -19,9 +19,10 @@ def volt_vs_spot(option_type, asset, save_img=False):
 
     # construct share token price dataframe
     try:
-        df_share_token_price = pd.read_json('https://raw.githubusercontent.com/Friktion-Labs/mainnet-tvl-snapshots/main/derived_timeseries/mainnet_income_{}_{}_sharePricesByGlobalId.json'.format(option_type, asset))
+        df_share_token_price = pd.read_json('https://raw.githubusercontent.com/Friktion-Labs/mainnet-tvl-snapshots/main/derived_timeseries/mainnet_income_{}_{}_sharePricesByGlobalId.json'.format(option_type.lower(), asset.lower()))
     except:
         print("This file does not exist...")
+        sys.exit()
 
     df_share_token_price.rename(columns={
         0:'unix_time',
@@ -33,6 +34,8 @@ def volt_vs_spot(option_type, asset, save_img=False):
 
 
     # create charts
+    alt.data_transformers.disable_max_rows()
+
     share_token_chart = alt.Chart(df_share_token_price).mark_line().encode(
         x=alt.X(
             'yearmonthdate(date)',
@@ -76,10 +79,10 @@ def volt_vs_spot(option_type, asset, save_img=False):
             color=alt.value('goldenrod')
         ).properties(
             width=600,
-            title='BTC Put Position vs. Spot Price'
+            title=asset+' '+option_type+' Position vs. Spot Price'
         )
 
-    final_chart = (share_token_chart + spot_price_chart).resolve_scale(y='independent')
+    final_chart = (spot_price_chart + share_token_chart).resolve_scale(y='independent')
 
     if not save_img:
         return final_chart
