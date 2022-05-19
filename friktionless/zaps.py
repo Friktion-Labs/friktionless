@@ -109,5 +109,5 @@ def volt_vs_spot(option_type, asset, save_img=False):
         print('saved chart image')
 
         blob = bucket.blob('spot-vs-portfolio-value/'+asset+'-'+option_type+'/'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
-        blob.upload_from_filename('/tmp/'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
+        blob.upload_from_filename('tmp/'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
         print('uploaded file to google cloud storage')
