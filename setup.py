@@ -6,6 +6,6 @@ setup(
    description='A utility library for the friktion team to automate data analysis and infrastructure',
    author='Matt Martin',
    author_email='matt@friktionlabs.com',
-   packages=['friktionless'], 
+   #packages=['friktionless'], 
    install_requires=['altair','pandas','google-cloud-storage']
 )
