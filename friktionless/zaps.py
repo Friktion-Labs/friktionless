@@ -105,9 +105,9 @@ def volt_vs_spot(option_type, asset, save_img=False):
         bucket = client.get_bucket('zaps')
         print('established cloud resource client')
 
-        final_chart.save('./tmp/'+asset+'-'+option_type+'-'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
+        final_chart.save('./tmp/'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
         print('saved chart image')
 
-        blob = bucket.blob('spot-vs-portfolio-value/'+asset+'-'+option_type+'-'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
-        blob.upload_from_filename('./tmp/'+asset+'-'+option_type+'-'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
+        blob = bucket.blob('spot-vs-portfolio-value/'+asset+'-'+option_type+'/'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
+        blob.upload_from_filename('./tmp/'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
         print('uploaded file to google cloud storage')
