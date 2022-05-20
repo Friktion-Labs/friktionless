@@ -20,6 +20,8 @@ def volt_vs_spot(globalId, save_img=False):
     # construct price dataframe
     if globalId in ['mainnet_income_put_pai','mainnet_income_put_tsUSDC','mainnet_income_put_uxd']:
         globalId_mod = 'mainnet_income_call_sol'
+    elif globalId == 'mainnet_income_put_sol':
+        globalId_mod = 'mainnet_income_put_sol_high'
     else:
         globalId_mod = globalId
     
@@ -54,7 +56,10 @@ def volt_vs_spot(globalId, save_img=False):
 
 
     # create chart title variables
-    asset = df_asset_reference['depositTokenSymbol'].iloc[0]
+    if 'call' in globalId:
+        asset = df_asset_reference['depositTokenSymbol'].iloc[0]
+    elif 'put' in globalId:
+        asset = df_asset_reference['underlyingTokenSymbol'].iloc[0]
 
     if df_asset_reference['voltType'].iloc[0] == 1:
         option_type = 'Call'
