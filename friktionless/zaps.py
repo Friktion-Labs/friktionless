@@ -18,8 +18,13 @@ def volt_vs_spot(globalId, save_img=False):
 
 
     # construct price dataframe
+    if globalId in ['mainnet_income_put_pai','mainnet_income_put_tsUSDC','mainnet_income_put_uxd']:
+        globalId_mod = 'mainnet_income_call_sol'
+    else:
+        globalId_mod = globalId
+    
     try:
-        df_prices = pd.read_json('https://raw.githubusercontent.com/Friktion-Labs/mainnet-tvl-snapshots/main/derived_timeseries/{}_pricesByCoingeckoId.json'.format(globalId))
+        df_prices = pd.read_json('https://raw.githubusercontent.com/Friktion-Labs/mainnet-tvl-snapshots/main/derived_timeseries/{}_pricesByCoingeckoId.json'.format(globalId_mod))
     except:
         sys.exit('The asset you selected is not currently being tracked.')
 
