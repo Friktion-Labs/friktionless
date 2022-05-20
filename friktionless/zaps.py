@@ -18,10 +18,8 @@ def volt_vs_spot(globalId, save_img=False):
 
 
     # construct price dataframe
-    if globalId in ['mainnet_income_put_pai','mainnet_income_put_tsUSDC','mainnet_income_put_uxd']:
+    if globalId in ['mainnet_income_put_pai','mainnet_income_put_tsUSDC','mainnet_income_put_uxd','mainnet_income_put_sol','mainnet_income_put_sol_high']:
         globalId_mod = 'mainnet_income_call_sol'
-    elif globalId == 'mainnet_income_put_sol':
-        globalId_mod = 'mainnet_income_put_sol_high'
     else:
         globalId_mod = globalId
     
