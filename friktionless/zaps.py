@@ -4,14 +4,22 @@ from datetime import datetime
 import sys
 from google.cloud import storage
 import os
+import requests
 
 
-def volt_vs_spot(option_type, asset, voltage='low', save_img=False):
+def volt_vs_spot(globalId, save_img=False):
+
+    # create mainnet volts reference dataframe
+    reference_url = 'https://raw.githubusercontent.com/Friktion-Labs/mainnet-tvl-snapshots/main/friktionSnapshot.json'
+    response = requests.get(reference_url)
+    data = response.json()
+    df_general_reference = pd.DataFrame(data['allMainnetVolts'])
+    df_asset_reference = df_general_reference[df_general_reference['globalId'] == globalId]
+
 
     # construct price dataframe
-    df_price_file_index = pd.read_json('https://storage.googleapis.com/friktion-reference-files/asset_prices.json')
     try:
-        df_prices = pd.read_json(df_price_file_index[df_price_file_index['asset'] == asset.upper()]['url'].iloc[0])
+        df_prices = pd.read_json('https://raw.githubusercontent.com/Friktion-Labs/mainnet-tvl-snapshots/main/derived_timeseries/{}_pricesByCoingeckoId.json'.format(globalId))
     except:
         sys.exit('The asset you selected is not currently being tracked.')
 
@@ -24,17 +32,10 @@ def volt_vs_spot(option_type, asset, voltage='low', save_img=False):
 
 
     # construct share token price dataframe
-    if asset == 'sol' and voltage == 'high':
-        asset_modified = 'sol_high'
-        asset_title = 'SOL High'
-    else:
-        asset_modified = asset
-        asset_title = asset
-
-    url = 'https://raw.githubusercontent.com/Friktion-Labs/mainnet-tvl-snapshots/main/derived_timeseries/mainnet_income_{}_{}_sharePricesByGlobalId.json'.format(option_type, asset_modified)
+    share_token_url = 'https://raw.githubusercontent.com/Friktion-Labs/mainnet-tvl-snapshots/main/derived_timeseries/{}_sharePricesByGlobalId.json'.format(globalId)
 
     try:
-        df_share_token_price = pd.read_json(url)
+        df_share_token_price = pd.read_json(share_token_url)
     except:
         sys.exit('This file does not exist.')
 
@@ -45,6 +46,20 @@ def volt_vs_spot(option_type, asset, voltage='low', save_img=False):
 
     df_share_token_price['date'] = df_share_token_price['unix_time'].apply(lambda x: datetime.fromtimestamp(x/1000))
     df_share_token_price['growth'] = df_share_token_price['share_token_price'] / 1.0 - 1
+
+
+    # create chart title variables
+    asset = df_asset_reference['depositTokenSymbol'].iloc[0]
+
+    if df_asset_reference['voltType'].iloc[0] == 1:
+        option_type = 'Call'
+    elif df_asset_reference['voltType'].iloc[0] == 2:
+        option_type = 'Put'
+
+    if df_asset_reference['isVoltage'].iloc[0]:
+        voltage = '-High'
+    else:
+        voltage = ''
 
 
     # create charts
@@ -67,10 +82,10 @@ def volt_vs_spot(option_type, asset, voltage='low', save_img=False):
         )
     ).properties(
         width=600,
-        title=asset_title.upper()+' '+option_type+' Position vs. Spot Price'
+        title=asset+voltage+' '+option_type+' Position vs. Spot Price'
     )
 
-    
+
     if df_prices['price'].min() < 1:
         format = '$,.2f'
     else:
@@ -99,7 +114,7 @@ def volt_vs_spot(option_type, asset, voltage='low', save_img=False):
             color=alt.value('goldenrod')
         ).properties(
             width=600,
-            title=asset_title.upper()+' '+option_type.capitalize()+' Position vs. Spot Price'
+            title=asset+voltage+' '+option_type+' Position vs. Spot Price'
         )
 
     final_chart = (spot_price_chart + share_token_chart).resolve_scale(y='independent')
@@ -115,6 +130,9 @@ def volt_vs_spot(option_type, asset, voltage='low', save_img=False):
         final_chart.save('./tmp/'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
         print('saved chart image')
 
-        blob = bucket.blob('spot-vs-portfolio-value/'+asset+'-'+option_type+'/'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
+        blob = bucket.blob('spot-vs-portfolio-value/'+globalId+'/'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
         blob.upload_from_filename('./tmp/'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
         print('uploaded file to google cloud storage')
+
+        os.remove('./tmp/'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
+        print('removed file from local storage')
