@@ -11,13 +11,13 @@ import numpy as np
 
 
 
-def volt_vs_spot(option_type, deposited_asset, save_img=False, save_img_dir=None):
+def volt_vs_spot(option_type, deposited_asset, isHighVoltage=False, save_img=False, save_img_dir=None):
     '''A function that pulls the historical spot price of an underlying asset and the historical performance of a volt, and renders a chart to show cumulative performance.'''
 
     # create mainnet volts reference dataframe
-    if option_type == 'call':
+    if option_type.lower() == 'call':
         volt_type = 1
-    elif option_type == 'put':
+    elif option_type.lower() == 'put':
         volt_type = 2
     
     reference_url = 'https://raw.githubusercontent.com/Friktion-Labs/mainnet-tvl-snapshots/main/friktionSnapshot.json'
@@ -26,7 +26,8 @@ def volt_vs_spot(option_type, deposited_asset, save_img=False, save_img_dir=None
     df_general_reference = pd.DataFrame(data['allMainnetVolts'])
     df_asset_reference = df_general_reference[
         (df_general_reference['voltType'] == volt_type) &
-        (df_general_reference['depositTokenSymbol'].str.lower() == deposited_asset.lower())
+        (df_general_reference['depositTokenSymbol'].str.lower() == deposited_asset.lower()) &
+        (df_general_reference['isVoltage'] == isHighVoltage)
         ]
 
 
