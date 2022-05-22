@@ -27,7 +27,7 @@ def volt_vs_spot(option_type, deposited_asset, underlying_asset, isHighVoltage=F
     df_asset_reference = df_general_reference[
         (df_general_reference['voltType'] == volt_type) &
         (df_general_reference['depositTokenSymbol'].str.lower() == deposited_asset.lower()) &
-        (df_general_reference['underlyingTokenSymbol'].str.lower() == underlying_asset.lower())
+        (df_general_reference['underlyingTokenSymbol'].str.lower() == underlying_asset.lower()) &
         (df_general_reference['isVoltage'] == isHighVoltage)
         ]
 
