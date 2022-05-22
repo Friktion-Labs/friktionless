@@ -5,25 +5,38 @@ import sys
 from google.cloud import storage
 import os
 import requests
+import json
+import ccxt
+import numpy as np
 
 
-def volt_vs_spot(globalId, save_img=False):
+
+def volt_vs_spot(option_type, deposited_asset, save_img=False, save_img_dir=None):
+    '''A function that pulls the historical spot price of an underlying asset and the historical performance of a volt, and renders a chart to show cumulative performance.'''
 
     # create mainnet volts reference dataframe
+    if option_type == 'call':
+        volt_type = 1
+    elif option_type == 'put':
+        volt_type = 2
+    
     reference_url = 'https://raw.githubusercontent.com/Friktion-Labs/mainnet-tvl-snapshots/main/friktionSnapshot.json'
     response = requests.get(reference_url)
     data = response.json()
     df_general_reference = pd.DataFrame(data['allMainnetVolts'])
-    df_asset_reference = df_general_reference[df_general_reference['globalId'] == globalId]
+    df_asset_reference = df_general_reference[
+        (df_general_reference['voltType'] == volt_type) &
+        (df_general_reference['depositTokenSymbol'] == deposited_asset)
+        ]
 
 
     # construct price dataframe
-    if globalId in ['mainnet_income_put_pai','mainnet_income_put_tsUSDC','mainnet_income_put_uxd','mainnet_income_put_sol','mainnet_income_put_sol_high']:
+    if df_asset_reference['globalId'].iloc[0] in ['mainnet_income_put_pai','mainnet_income_put_tsUSDC','mainnet_income_put_uxd','mainnet_income_put_sol','mainnet_income_put_sol_high']:
         globalId_mod = 'mainnet_income_call_sol'
-    elif 'put' in globalId:
-        globalId_mod = globalId.replace('put','call')
+    elif 'put' in df_asset_reference['globalId'].iloc[0]:
+        globalId_mod = df_asset_reference['globalId'].iloc[0].replace('put','call')
     else:
-        globalId_mod = globalId
+        globalId_mod = df_asset_reference['globalId'].iloc[0]
     
     try:
         df_prices = pd.read_json('https://raw.githubusercontent.com/Friktion-Labs/mainnet-tvl-snapshots/main/derived_timeseries/{}_pricesByCoingeckoId.json'.format(globalId_mod))
@@ -39,7 +52,7 @@ def volt_vs_spot(globalId, save_img=False):
 
 
     # construct share token price dataframe
-    share_token_url = 'https://raw.githubusercontent.com/Friktion-Labs/mainnet-tvl-snapshots/main/derived_timeseries/{}_sharePricesByGlobalId.json'.format(globalId)
+    share_token_url = 'https://raw.githubusercontent.com/Friktion-Labs/mainnet-tvl-snapshots/main/derived_timeseries/{}_sharePricesByGlobalId.json'.format(df_asset_reference['globalId'].iloc[0])
 
     try:
         df_share_token_price = pd.read_json(share_token_url)
@@ -56,15 +69,10 @@ def volt_vs_spot(globalId, save_img=False):
 
 
     # create chart title variables
-    if 'call' in globalId:
+    if 'call' in df_asset_reference['globalId'].iloc[0]:
         asset = df_asset_reference['depositTokenSymbol'].iloc[0]
-    elif 'put' in globalId:
+    elif 'put' in df_asset_reference['globalId'].iloc[0]:
         asset = df_asset_reference['underlyingTokenSymbol'].iloc[0]
-
-    if df_asset_reference['voltType'].iloc[0] == 1:
-        option_type = 'Call'
-    elif df_asset_reference['voltType'].iloc[0] == 2:
-        option_type = 'Put'
 
     if df_asset_reference['isVoltage'].iloc[0]:
         voltage = '-High'
@@ -92,7 +100,7 @@ def volt_vs_spot(globalId, save_img=False):
         )
     ).properties(
         width=600,
-        title=asset+voltage+' '+option_type+' Position vs. Spot Price'
+        title=asset+voltage+' '+option_type.capitalize()+' Position vs. Spot Price'
     )
 
 
@@ -124,7 +132,7 @@ def volt_vs_spot(globalId, save_img=False):
             color=alt.value('goldenrod')
         ).properties(
             width=600,
-            title=asset+voltage+' '+option_type+' Position vs. Spot Price'
+            title=asset+voltage+' '+option_type.capitalize()+' Position vs. Spot Price'
         )
 
     final_chart = (spot_price_chart + share_token_chart).resolve_scale(y='independent')
@@ -141,8 +149,12 @@ def volt_vs_spot(globalId, save_img=False):
         print('saved chart image')
 
         blob = bucket.blob('spot-vs-portfolio-value/'+globalId+'/'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
-        blob.upload_from_filename('./tmp/'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
+        blob.upload_from_filename(save_img_dir+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
         print('uploaded file to google cloud storage')
 
-        os.remove('./tmp/'+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
+        os.remove(save_img_dir+datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+'.png')
         print('removed file from local storage')
+
+
+def realized_volatility(ftx_api_key, ftx_secret):
+    pass
