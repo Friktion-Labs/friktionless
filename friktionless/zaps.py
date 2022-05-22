@@ -69,10 +69,8 @@ def volt_vs_spot(option_type, deposited_asset, save_img=False, save_img_dir=None
 
 
     # create chart title variables
-    if 'call' in df_asset_reference['globalId'].iloc[0]:
-        asset = df_asset_reference['depositTokenSymbol'].iloc[0]
-    elif 'put' in df_asset_reference['globalId'].iloc[0]:
-        asset = df_asset_reference['underlyingTokenSymbol'].iloc[0]
+    asset = df_asset_reference['depositTokenSymbol'].iloc[0]
+
 
     if df_asset_reference['isVoltage'].iloc[0]:
         voltage = '-High'
