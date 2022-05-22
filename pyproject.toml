@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "friktionless"
+version = "0.0.1"
+description = "**friktionless** is a Python package providing simplified interfaces to Friktion data. It aims to be the fundamental building block for doing data engineering and data analysis in Python for Friktion. Additionally, it has the broader goal of becoming **the most powerful and flexible open."
+authors = ["Matt Martin <matt@friktionlabs.com>"]
+license = ""
+
+[tool.poetry.dependencies]
+python = ">=3.8, <3.10"
+altair = "^4.2.0"
+altair-saver = "^0.5.0"
+pandas = "^1.4.2"
+pandas-gbq = "^0.17.5"
+google-cloud-storage = "^2.3.0"
+google-cloud-bigquery = "^3.1.0"
+selenium = "^4.1.5"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
