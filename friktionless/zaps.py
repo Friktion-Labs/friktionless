@@ -26,7 +26,7 @@ def volt_vs_spot(option_type, deposited_asset, save_img=False, save_img_dir=None
     df_general_reference = pd.DataFrame(data['allMainnetVolts'])
     df_asset_reference = df_general_reference[
         (df_general_reference['voltType'] == volt_type) &
-        (df_general_reference['depositTokenSymbol'] == deposited_asset)
+        (df_general_reference['depositTokenSymbol'].lower() == deposited_asset.lower())
         ]
 
 
