@@ -165,6 +165,7 @@ def realized_volatility(
     reference_time=datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 
     lookback_days=7
     ):
+    '''A function that pulls OHLCV price data from FTX for designated trading pairs and calculates the realized volatility of the price movement over a given period of time.'''
 
     cftx = ccxt.ftx(
     {"apiKey" : ftx_api_key,
