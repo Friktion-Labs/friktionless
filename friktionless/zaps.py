@@ -172,7 +172,7 @@ def realized_volatility(
      }
     )
 
-    time_since = datetime.timestamp(datetime.strptime(reference_time,'%Y-%m-%dT%H:%M:%S') - timedelta(days=lookback_days))
+    time_since = datetime.timestamp(datetime.strptime(reference_time,'%Y-%m-%dT%H:%M:%S') - timedelta(days=lookback_days))*1000
 
     if not isinstance(asset_pairs, list):
         asset_pairs = [asset_pairs]
