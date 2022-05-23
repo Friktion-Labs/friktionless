@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "friktionless"
-version = "0.0.3"
+version = "0.0.4"
 description = "Friktionless is a Python package providing simplified interfaces to Friktion data. It aims to be the fundamental building block for doing data engineering and data analysis in Python for Friktion."
 authors = ["Friktion core team <team@friktionlabs.com>"]
 license = "Proprietary"
