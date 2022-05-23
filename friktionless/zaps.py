@@ -162,7 +162,7 @@ def realized_volatility(
     ftx_secret, 
     asset_pairs, 
     price_window_size='5m', 
-    reference_time=datetime.now().strftime('%Y-%m-%dT%H:%M%:%S'), 
+    reference_time=datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 
     lookback_days=7
     ):
 
@@ -172,7 +172,7 @@ def realized_volatility(
      }
     )
 
-    time_since = reference_time.strptime('%Y-%m-%dT%H:%M:%S') - timedelta(days=lookback_days)
+    time_since = datetime.strptime(reference_time,'%Y-%m-%dT%H:%M:%S') - timedelta(days=lookback_days)
 
     if not isinstance(asset_pairs, list):
         asset_pairs = [asset_pairs]
