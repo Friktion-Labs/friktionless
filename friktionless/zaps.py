@@ -172,7 +172,7 @@ def realized_volatility(
      }
     )
 
-    time_since = datetime.strptime(reference_time,'%Y-%m-%dT%H:%M:%S') - timedelta(days=lookback_days)
+    time_since = datetime.timestamp(datetime.strptime(reference_time,'%Y-%m-%dT%H:%M:%S') - timedelta(days=lookback_days))
 
     if not isinstance(asset_pairs, list):
         asset_pairs = [asset_pairs]
@@ -188,7 +188,7 @@ def realized_volatility(
     data_dict = {}
 
     for asset_pair in asset_pairs:
-        data = cftx.fetchOHLCV(asset_pair, price_window_size, since=time_since, limit=lookback_days*int(multiplier))
+        data = cftx.fetchOHLCV(asset_pair, price_window_size, since=time_since, limit=lookback_days*multiplier)
         df = pd.DataFrame(data, columns=["time", "open", "high", "low", "close", "volume"])
         data_dict[asset_pair] = df
     
