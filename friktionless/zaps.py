@@ -188,7 +188,7 @@ def realized_volatility(
     data_dict = {}
 
     for asset_pair in asset_pairs:
-        data = cftx.fetchOHLCV(asset_pair, price_window_size, since=time_since, limit=lookback_days*multiplier)
+        data = cftx.fetchOHLCV(asset_pair, price_window_size, since=time_since, limit=int(lookback_days*multiplier))
         df = pd.DataFrame(data, columns=["time", "open", "high", "low", "close", "volume"])
         data_dict[asset_pair] = df
     
