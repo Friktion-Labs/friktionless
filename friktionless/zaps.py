@@ -1,6 +1,6 @@
 import pandas as pd
 import altair as alt
-from datetime import datetime
+from datetime import datetime, timedelta
 import sys
 from google.cloud import storage
 import os
@@ -8,6 +8,7 @@ import requests
 import json
 import ccxt
 import numpy as np
+import re
 
 
 
@@ -156,5 +157,61 @@ def volt_vs_spot(option_type, deposited_asset, underlying_asset, isHighVoltage=F
         print('removed file from local storage')
 
 
-def realized_volatility(ftx_api_key, ftx_secret):
-    pass
+def realized_volatility(
+    ftx_api_key, 
+    ftx_secret, 
+    asset_pairs, 
+    price_window_size='5m', 
+    reference_time=datetime.now().strftime('%Y-%m-%dT%H:%M%:%S'), 
+    lookback_days=7
+    ):
+
+    cftx = ccxt.ftx(
+    {"apiKey" : ftx_api_key,
+     "secret" : ftx_secret
+     }
+    )
+
+    time_since = reference_time.strptime('%Y-%m-%dT%H:%M:%S') - timedelta(days=lookback_days)
+
+    if not isinstance(asset_pairs, list):
+        asset_pairs = [asset_pairs]
+
+    
+    if re.findall('[a-z]', price_window_size)[0] == 'm':
+        multiplier = 1440 / int(re.findall('[0-9]+', price_window_size)[0])
+    elif re.findall('[a-z]', price_window_size)[0] == 'h':
+        multiplier = 24 / int(re.findall('[0-9]+', price_window_size)[0])
+    elif re.findall('[a-z]', price_window_size)[0] == 'd':
+        multiplier = 1
+
+    data_dict = {}
+
+    for asset_pair in asset_pairs:
+        data = cftx.fetchOHLCV(asset_pair, price_window_size, since=time_since, limit=lookback_days*multiplier)
+        df = pd.DataFrame(data, columns=["time", "open", "high", "low", "close", "volume"])
+        data_dict[asset_pair] = df
+    
+    asset_dict = {
+    'asset_pair' : [],
+    'high' : [],
+    'low' : [],
+    'mean' : [],
+    'close' : [],
+    'range' : [],
+    'realized_volatility_'+str(lookback_days)+'d' : []
+    }
+
+    for k, v in data_dict.items():
+        v["vol"] = np.log(v.high/v.low)**2
+        
+        asset_dict['asset_pair'].append(k)
+        asset_dict['high'].append(v['close'].max())
+        asset_dict['low'].append(v['close'].min())
+        asset_dict['mean'].append(v['close'].mean())
+        asset_dict['close'].append(v['close'].iloc[0])
+        asset_dict['range'].append(str(100*(v.close.max()-v.close.min())/v.close.iloc[0]))
+        asset_dict['realized_volatility_'+str(lookback_days)+'d'].append(str(np.sqrt(v.vol.sum()*1/(4*10*np.log(2)))*np.sqrt(365)*100))
+    
+    return pd.DataFrame(asset_dict)
+    
